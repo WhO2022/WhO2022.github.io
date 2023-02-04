@@ -1,58 +1,29 @@
-<html>
-
-
-
-<head>
-
-<meta http-equiv="Content-Language" content="ru">
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-
-<title>РџРѕРґРєР»СЋС‡РµРЅРёРµ</title>
-
-</head>
-
-
-
-<body>
-
-<center>
-
-<h1>Р’РІРµРґРёС‚Рµ РґР°РЅРЅС‹Рµ РґР»СЏ Р·РІРѕРЅРєР°</h1>
-
-<input placeholder="РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ" name="login">
-
-<p></p>
-
-<input type="password" placeholder="РџР°СЂРѕР»СЊ" id="password" name="pass">
-
-<script>
-
-function playSound(sound) {
-
-  var song = document.getElementById(sound);
-
-  song.volume = 1;
-
-  if (song.paused) {
-
-    song.play();
-
-  } else {
-
-    song.pause();
-
-  }
-
-}
-
-</script>
-
-<p></p>
-
-<audio onended="location.href = 'connected.html'" id="sound"><source src="audio/dialup.mp3" type="audio/mp3"></audio>
-
-<input type="submit" value="Р’С‹Р·РѕРІ" id="button" class="button" onclick="playSound('sound');"">
-
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="ru">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Подключение</title>
+</head>
+
+<body>
+<center>
+<h1>Введите данные для звонка</h1>
+<input placeholder="Имя пользователя" name="login">
+<p></p>
+<input type="password" placeholder="Пароль" id="password" name="pass">
+<script>
+function playSound(sound) {
+  var song = document.getElementById(sound);
+  song.volume = 1;
+  if (song.paused) {
+    song.play();
+  } else {
+    song.pause();
+  }
+}
+</script>
+<p></p>
+<audio onended="location.href = 'connected.html'" id="sound"><source src="audio/dialup.mp3" type="audio/mp3"></audio>
+<input type="submit" value="Вызов" id="button" class="button" onclick="playSound('sound');"">
