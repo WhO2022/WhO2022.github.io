@@ -1,538 +1,77 @@
-<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" html lang="en">
+<html>
 <head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=7" />
-    
-    <title>Samir's Web</title>
-    <link rel="stylesheet" type="text/css" href="Style/catalog.css" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="search" type="application/opensearchdescription+xml" href="OpenSearch.aspx" 
-        title='Каталог Центра обновления Майкрософт' />
-    <!-- <script type="text/javascript">
-	function supressError(message, url, line)
-	{
-	  var re = /^function\s*([^(]*)\s*\(([^)]*)\)/;
-	  var matches = null;
-	  if (arguments.caller != null) {
-	    matches = re.exec(arguments.caller.callee);
-	  }
-	  var argArray = new Array();
-	  var fName = 'unknown';
-	  if(matches)
-	  {
-	    if(matches[1] && matches[1].toString().length > 0)
-	       fName = matches[1].toString();
-	    if(matches[2] && matches[2].toString().length > 0)
-	    {
-	       var cleanMatches = new String(matches[2]).replace(/\s*/g,'');
-	       argArray = cleanMatches.split(',');
-	    }
-	  }
-	  var args = (argArray.length>0)?'':'none';
-	  for(var i=0; i<argArray.length; i++)
-	  {
-	    args += ((args=='')?'':', ') + argArray[i] + '(' + typeof(arguments.caller[i]) + '):';
-	    args += arguments.caller[i];
-	  }
-	  if(typeof(logger) != typeof(undefined) && logger != null)
-	    logger.log(logger.logLevelFatal, 'JavaScript Error: MESSAGE='+ message + '. URL=' + url + '. LINE='+ line + '. FUNCTION_NAME=' + fName +'. ARGUMENTS=' + args);
-	  var location = window.location.href.toLowerCase();
-	  if(location.indexOf('Error.aspx'.toLowerCase()) == -1)
-	    window.location.href = 'Error.aspx'  + '?id=' + Microsoft.UpdateServices.Catalog.Constants.ErrorScriptError;
-	  return true;
-	}
-	window.onerror = supressError;
-</script> -->
-    <script type="text/javascript">
-        var internetExplorer = false;
-        var basket;
-
-        function setBasketCount() {
-            basket.syncCache();
-            var basketCount = basket.get_count();
-            headerBasketCount.innerText = basketCount;
-            if (basketCount > 0) {
-                basketControl.className = "basketControl";
-                basketImageSpan.className = "basketControl";
-            }
-            else {
-                basketControl.className = "basketControlInActive";
-                basketImageSpan.className = "basketControlInActive";
-            }
-        }
-
-        function goToBasket() {
-            var updateIDs = getUpdateIds(basket.getAllUpdates());
-            if (updateIDs.replace(/^\s+|\s+$/g, '') == "") return;
-            basketForm.updateIDs.value = updateIDs;
-            var qs = new Microsoft.UpdateServices.Catalog.QueryString(window.location.search);
-            basketForm.action = Microsoft.UpdateServices.Catalog.Constants.PageViewBasket + qs.appendErrorsQS();
-            basketForm.submit();
-            return false;
-        }
-
-        function getUpdateIds(aUpdateIds) {
-            var basketUpdateIds = "";
-            for (i = 0; i < aUpdateIds.length; i++) {
-                basketUpdateIds += aUpdateIds[i].get_uid() + ",";
-            }
-
-            return basketUpdateIds;
-        }
-
-        function goToDetails(updateID) {
-            var windowName = updateID.replace(/-/g, Microsoft.UpdateServices.Catalog.Constants.EmptyString);
-            var qs = new Microsoft.UpdateServices.Catalog.QueryString(window.location.search);
-            var detailsDialog = window.open(Microsoft.UpdateServices.Catalog.Constants.PageScopedViewInline + qs.appendErrorsQS("?updateid=" + updateID),
-                                            windowName, 'height=560,width=740,status=no,toolbar=no,menubar=no,location=no,scrollbars=yes,resizable=1 ');
-            if (detailsDialog == null) {
-                detailsPopup.style.display = "block";
-            }
-            else {
-                detailsDialog.focus();
-            }
-            return false;
-        }
-
-        function propogateBasketState(url) {
-            var qs = new Microsoft.UpdateServices.Catalog.QueryString(window.location.search);
-            basketForm.action = url + qs.appendErrorsQS();
-            basketForm.submit();
-            event.cancelBubble = true;
-            event.returnValue = false;
-            return false;
-        }
-
-        function createMasterPageComponents(prerequisiteChecksPassed) {
-            var searchLink = $get('searchButtonLink');
-            var basketLink = $get('basketControl');
-            var basketImage = $get('basketImageSpan');
-            var searchBox = $get('ctl00$searchTextBox'.replace('$', '_'));
-            var masterContext = null;
-
-            if (navigator.language == "fr" || navigator.language == "fr-FR") {
-                document.getElementById("supportLinkBoxFrench").style.visibility = "visible";
-            }
-
-            else
-            {
-                document.getElementById("supportLinkBoxFrench").style.visibility = "hidden";
-            }
-
-            //separating out code block which requires all prerequisites checks to pass            
-            if (prerequisiteChecksPassed) {
-                var searchTextBox = new Microsoft.UpdateServices.Catalog.UI.SearchTextBox($get('ctl00$searchTextBox'.replace('$', '_')),
-                    'запустите поиск...',
-                    searchBox.value,
-                    searchLink,
-                    'defaultSearchText'
-                    );
-                searchTextBox.initialize();
-
-                if (internetExplorer) {
-                    $addHandler(basketLink, "click", goToBasket);
-                    $addHandler(basketImage, "click", goToBasket);
-                    $addHandler(window, "focus", setBasketCount);
-                }
-
-                $addHandler(searchLink, "click", function (event) {
-                    event = event || window.event;
-                    event.cancelBubble = true;
-                    event.returnValue = false;
-                    var searchText = searchTextBox.get_searchText();
-                    if (searchText.replace(/^\s+|\s+$/g, '') == "") return false;
-                    var qs = new Microsoft.UpdateServices.Catalog.QueryString(window.location.search);
-                    var searchUrl = 'Search.aspx' + qs.appendErrorsQS('?q=' + encodeURIComponent(searchText));
-                    basketForm.action = searchUrl;
-                    basketForm.submit();
-                    return false;
-                });
-
-                masterContext = new Microsoft.UpdateServices.Catalog.UI.MasterPageContext(basketForm);
-                masterContext.initialize();
-
-                if (internetExplorer) {
-                    basket = Microsoft.UpdateServices.Catalog.DownloadBasket.get_instance();
-                    basket.contentChanged.add(setBasketCount);
-                    setBasketCount();
-                }
-
-                //cancel the enter key click for the mainform so it will not do a postback
-                var mainFormElement = $get('aspnetForm');
-                mainFormElement.onkeydown = function (event) {
-                    event = event || window.event;
-                    if ((event.which || event.keyCode) == Microsoft.UpdateServices.Catalog.Constants.EnterButtonKeyCode && (event.target || event.srcElement).id == 'ctl00$searchTextBox'.replace('$', '_')) {
-                        event.cancelBubble = true;
-                        event.returnValue = false;
-                        return false;
-                    }
-                    return true;
-                }
-
-                if (Microsoft.UpdateServices.Catalog.Constants.DownloadInformation != 'support') {
-                    window.focus();
-                    (searchTextBox.get_element()).focus();
-                }
-            }
-
-            return masterContext;
-        }
-    </script>
-
+<title> test </title>
+<meta charset="utf8">
 </head>
-
-<body class="mainBody support" id="ltr"> <div id="outerDivID">   
-    <form id="basketForm" method ="post" action="">
-        <input type="hidden" id="updateIDs" name="updateIDs" />
-        <input type="hidden" id="updateIDsBlockedForImport" name="updateIDsBlockedForImport" />        
-        <input type="hidden" id="contentImport" name="contentImport" value=""/>
-        <input type="hidden" id="sku" name="sku" value="" />
-        <input type="hidden" id="serverName" name="serverName" value=""/>
-        <input type="hidden" id="ssl" name="ssl" value=""/>
-        <input type="hidden" id="portNumber" name="portNumber" value=""/>
-        <input type="hidden" id="version" name="version" value=""/>    
-        <input type="hidden" id="protocol" name="protocol" value=""/>                
-    </form>
- 
-<div class="aspNetHidden">
-<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
-<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
-<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="N4b1dDTevBCEZk5o8VAD2iTqWtUj46Vga004a8lJExdR+ujvoxh3uwYUZXE9VLil1wUpMf3RKXv8PMzJA3sUUdxa0hzbZdZ2VNAWqcE8JTThh6+91QGCBzvZcj/A5cbsGBL2DpK16uaoELhm9xEt7pHSg+9iPIie9BM12jAbuK4=" />
-</div>
-
-<script type="text/javascript">
-//<![CDATA[
-var theForm = document.forms['aspnetForm'];
-if (!theForm) {
-    theForm = document.aspnetForm;
-}
-function __doPostBack(eventTarget, eventArgument) {
-    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
-        theForm.__EVENTTARGET.value = eventTarget;
-        theForm.__EVENTARGUMENT.value = eventArgument;
-        theForm.submit();
-    }
-}
-//]]>
-</script>
-
-
-<script src="/WebResource.axd?d=pynGkmcFUV13He1Qd6_TZHxxdeJUrNoPJt6lxqvRW6Pzs10y1yT0YV6OgZaeZ6xoRcBn9JsAyiMny6iPkJnw0A2&amp;t=638086368424030640" type="text/javascript"></script>
-
-
-<script src="/ScriptResource.axd?d=NJmAwtEo3Ipnlaxl6CMhvrkdqm_yxvjqkpYsU8np-a1hZKqNHieny7c8n0uFLH4lzuKZ2_3k4RIn1u-oD0Hipvv6bGQQXy6aHGv0t5q6qO1D0p3K1XQnZtU9otznsIz2SPmyOXUpjM0fXDhvEXkcl622PtyhpuYTTG0Cu-XpPYo1&amp;t=ffffffffaa493ab8" type="text/javascript"></script>
-<script src="/ScriptResource.axd?d=dwY9oWetJoJoVpgL6Zq8OOJ-LUvz3VxVAyp7Uzq5cGa7mkDN5Xh77gOyzVbjX9jsT4Xw3w4ZL5jejcL2YFsfttusLZ_-e8blE9iv6Ud8tM0VJQL6zbNjC-bnxcSPwzKLzZ5_L4Rh4XRf_if0fcOmIyTPM9R7X2Pu2Q--VBmrvPM1&amp;t=ffffffffaa493ab8" type="text/javascript"></script>
-<script src="SiteConstants.aspx?6" type="text/javascript"></script>
-<script src="Script/CommonTypes.js?6" type="text/javascript"></script>
-<script src="Script/DownloadBasket.js?6" type="text/javascript"></script>
-<script src="Script/MasterComponents.js?6" type="text/javascript"></script>
-<div class="aspNetHidden">
-
-	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="5C437075" />
-	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="2TGW6KntSw023/oxHdr0UqHNnGe8tvJjSuLoJ/PlQtmHgY/Ui2D7moCwvqe5zFQ6NgIqCYTt/XXCfAT0mYGmzddZrUJh9kITvv06F8l94qtRT2BPzLoxYuBZ4naCrYfH" />
-</div>
-   <div id="mainBoxMaster" >
-        <table id="layoutTable" cellpadding="0" cellspacing="0" border="0" style="height:100%" role="presentation">
-            <tr style="height:90%" valign="top">
-                <td>
-                    <div id="mainBox">
-                        <table id="headerBox" cellpadding="0" cellspacing="0" border="0" role="presentation">
-                            <tr>
-                                <td id="headerLinkBox" rowspan="2">
-                                    <a class="masterHomeLink" href="home.aspx" onclick="propogateBasketState('home.aspx')"><div id="masterFormTitle" class="masterBodyTitle"><span id="ctl00_textTitleMaster">Samir's Web - добро пожаловать</span></div></a>
-                                    <a href="music.html" id="faqNavLink" onclick="propogateBasketState('Faq.aspx')" class="headerNavLink"><span id="ctl00_faqResource">Музыка</span></a>|<a href="news.html" id="helpNavLink" onclick="propogateBasketState('Support.aspx')" class="headerNavLink"><span id="ctl00_helpResource">Новости</span></a>
-                                </td>
-                                <td align="right" valign="bottom" id="rightTopHeaderBox">
-                                    <table align="right" cellpadding="0" cellspacing="0" border="0" id="searchBox" role="presentation">
-                                        <tr>
-                                            <td id="searchGlowTopBox" colspan="4"></td>
-                                        </tr>
-                                        <tr>
-                                            <td id="searchGlowPart8bBox"><img src="Images/bg_SearchGlow_part8b.gif" id="ctl00_searchGlowPart8b" alt="" /></td>
-<form name="SearchForm" method="get" action="http://moogle.sbs" value="ru-ru" id="Form1">
-<input width="100" type="hidden" value="?q">
-<input width="100" type="text" name="q" value="" id="Editbox1" placeholder="Поиск в Moogle" spellcheck="false">
-<input type="submit"  id="Button1" name="submit" value="Search">
+<body bgcolor="#000000" text="#FFFFFF" link="#green" vlink="#ff00ff" alink="#800000">
+<center>
+<p align="center"><font size="+4"><font color="#ffffff">Welcome to my homepage!</font></font></p>
+</center>
+<p>Новый дизайн...</p>
+<p>Добро пожаловать на персональный сайт Samir's Web</p>
+<p>Боковым меню можно ознакомиться с сайтом, или просто побродить по Сети</p>
+<hr>
+form name="calculator" >
+<br><input type="textfield" name="ans" value="">
+<input type="button" value="=" onClick="document.calculator.ans.value=eval(document.calculator.ans.value)"><br>
+<input type="button" value="7" onClick="document.calculator.ans.value+='7'">
+<input type="button" value="8" onClick="document.calculator.ans.value+='8'">
+<input type="button" value="9" onClick="document.calculator.ans.value+='9'"><input type="button" value="/" onClick="document.calculator.ans.value+='/'"><br>
+<input type="button" value="4" onClick="document.calculator.ans.value+='4'">
+<input type="button" value="5" onClick="document.calculator.ans.value+='5'">
+<input type="button" value="6" onClick="document.calculator.ans.value+='6'"><input type="button" value="*" onClick="document.calculator.ans.value+='*'"><br>
+<input type="button" value="1" onClick="document.calculator.ans.value+='1'">
+<input type="button" value="2" onClick="document.calculator.ans.value+='2'">
+<input type="button" value="3" onClick="document.calculator.ans.value+='3'"><input type="button" value="-" onClick="document.calculator.ans.value+='-'"><br>
+<input type="button" value="0" onClick="document.calculator.ans.value+='0'">
+<input type="button" value="+" onClick="document.calculator.ans.value+='+'"><input type="reset" value="CE/C"><br>
 </form>
-                                            </td>
-                                         
-                                        </tr>
-                                        <tr>
-                                            <td id="searchGlowBottomBox" colspan="4"><img id="searchGlowPart7" src="Images/bg_SearchGlow_part7.gif" alt="" /><img id="searchGlowPart5" src="Images/bg_SearchGlow_part5.gif" alt="" /></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td align="right" valign="bottom" id="rightBottomHeaderBox">
-                                    <table align="right" cellpadding="0" cellspacing="0" border="0" id="headerStatusBox" role="presentation">
-                                        
-                                            <tr style="display: none">
-                                        
-                                            <td id="basketBox"><a id="basketControl" href="javascript:void(0);" class="basketControlInActive">просмотреть корзину (<span id="headerBasketCount">0</span>)</a></td>
-                                            <td id="basketImage"><a id="basketImageSpan" href="javascript:void(0);" class="basketControlInActive" ><img src="Images/decor_Basket.jpg" border="0" alt="" /></a></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
-                        <div id="contentBox">
-                            
-<script type="text/javascript">
-	function checkOSVersion()
-	{
-	    return true;
-	}
-	function checkValidBrowserOnWin10Plus()
-	{
-	    return true;
-	}
-	function getRedirectURLAfterControlInstallation(currentURL)
-	{
-	    var redirectURL=null;
-	    var location = window.location.href.toLowerCase();
-	    if (location.indexOf(Microsoft.UpdateServices.Catalog.Constants.PageSearch.toLowerCase()) != -1 ||
-	        location.indexOf(Microsoft.UpdateServices.Catalog.Constants.PageScopedView.toLowerCase()) != -1 ||
-	        location.indexOf(Microsoft.UpdateServices.Catalog.Constants.PageScopedViewRedirect.toLowerCase()) != -1 ||
-	        location.indexOf(Microsoft.UpdateServices.Catalog.Constants.PageHome.toLowerCase()) != -1 ||
-	        location.indexOf(Microsoft.UpdateServices.Catalog.Constants.PageViewBasket.toLowerCase()) != -1 ||
-	        location.indexOf(Microsoft.UpdateServices.Catalog.Constants.PageDownloadInformation.toLowerCase()) != -1)
-	    {
-	         redirectURL = Microsoft.UpdateServices.Catalog.Constants.PageInstall;
-	         if (location.indexOf(Microsoft.UpdateServices.Catalog.Constants.PageViewBasket.toLowerCase())==-1 &&
-	             location.indexOf(Microsoft.UpdateServices.Catalog.Constants.PageDownloadInformation.toLowerCase())== -1) {
-	             if (window.location.search) {
-	                  redirectURL +=  window.location.search;
-	                  redirectURL += '&' + Microsoft.UpdateServices.Catalog.Constants.QueryStringReferringPage + '=' + 'Support.aspx';
-	             } else {
-	                  redirectURL+= '?' + Microsoft.UpdateServices.Catalog.Constants.QueryStringReferringPage + '=' + 'Support.aspx';
-	             }
-	         }
-	    } else {
-	         redirectURL = Microsoft.UpdateServices.Catalog.Constants.PageThanks +'?id='+Microsoft.UpdateServices.Catalog.Constants.ThanksControlNotInstalled;
-	    }
-	    return(redirectURL);
-	}
-	function checkActiveX()
-	{
-	    var activeXEnabled=true;
-	    try
-	    {
-	        var xmlDOM = new ActiveXObject('Msxml2.XMLHTTP');
-	    }
-	    catch(e)
-	    {
-	        activeXEnabled=false;
-	    }
-	    return activeXEnabled;
-	}
-	function checkCPU()
-	{
-	    var validCPU=false;
-	    var cpuClass = navigator.cpuClass.toLowerCase();
-	    if(Microsoft.UpdateServices.Catalog.Constants.x86 == cpuClass || Microsoft.UpdateServices.Catalog.Constants.x64 ==cpuClass)
-	    {
-	        validCPU=true;
-	    }
-	    return validCPU;
-	}
-	function checkControlInstalled()
-	{
-	    return true;
-	}
-	function checkUserDataAccess()
-	{
-	    var checkPassed=true;
-	    try
-	    {
-	        var storageElement = document.createElement("input");
-	        storageElement.type = "hidden";
-	        storageElement.style.behavior = "url(#default#userData)";
-	        storageElement.setAttribute('name','1');
-	        document.body.appendChild(storageElement);
-	        storageElement.save('StorageKey');
-	    }
-	    catch(e)
-	    {
-	        checkPassed=false;
-	    }
-	    return checkPassed;
-	}
-	function detectRedirectionCycle()
-	{
-	    var redirectionCycle=true;
-	    if(window.location.href.indexOf('Thanks.aspx') == -1)
-	    {
-	        redirectionCycle=false;
-	    }
-	    return(redirectionCycle);
-	}
-	function makePageVisible(){
-	   var elt = document.getElementById("outerDivID");
-	   if (elt)
-	   {
-	       elt.style.display = "block";
-	   }
-	   var bodyElt=document.getElementsByTagName("body")[0];
-	   if(bodyElt)
-	   {
-	       bodyElt.className="mainBody support";
-	   }
-	}
-	function clientPrereqChecks()
-	{
-	    var osVersionCheckPassed=false;
-	    var validBrowserOnWin10PlusCheckPassed=false;
-	    var cpuCheckPassed=false;
-	    var userDataCheckPassed=false;
-	    var activeXCheckPassed=false;
-	    var controlInstalledCheckPassed=false;
-	    osVersionCheckPassed=checkOSVersion();
-	    if(osVersionCheckPassed) {
-	        validBrowserOnWin10PlusCheckPassed=checkValidBrowserOnWin10Plus();
-	    }
-	    if(validBrowserOnWin10PlusCheckPassed)
-	    {
-	        cpuCheckPassed=checkCPU();
-	    }
-	    if(cpuCheckPassed)
-	    {
-	        userDataCheckPassed=checkUserDataAccess();
-	    }
-	    if(userDataCheckPassed)
-	    {
-	        activeXCheckPassed=checkActiveX();
-	    }
-	    if(activeXCheckPassed)
-	    {
-	        controlInstalledCheckPassed=checkControlInstalled();
-	    }
-	    var checksPassed=osVersionCheckPassed && validBrowserOnWin10PlusCheckPassed && userDataCheckPassed && cpuCheckPassed && controlInstalledCheckPassed && activeXCheckPassed;
-	    var canRedirect=!checksPassed && !detectRedirectionCycle();
-	    canRedirect=false;
-	if(canRedirect)
-	{
-	    if(!osVersionCheckPassed)
-	    {
-	         window.location.href = 'Thanks.aspx' + '?id=' + Microsoft.UpdateServices.Catalog.Constants.ThanksUnsupportedOs;
-	    }
-	    else if(!validBrowserOnWin10PlusCheckPassed)
-	    {
-	         window.location.href = 'Thanks.aspx' + '?id=' + Microsoft.UpdateServices.Catalog.Constants.ThanksUnsupportedBrowser;
-	    }
-	    else if(!cpuCheckPassed)
-	    {
-	         window.location.href = 'Thanks.aspx' + '?id=' + Microsoft.UpdateServices.Catalog.Constants.ThanksUnsupportedCPU;
-	    }
-	    else if(!userDataCheckPassed)
-	    {
-	        window.location.href = 'Thanks.aspx' + '?id=' + Microsoft.UpdateServices.Catalog.Constants.ThanksUserDataDisabled;
-	    }
-	    else if(!activeXCheckPassed)
-	    {
-	          window.location.href = 'Thanks.aspx' + '?id=' + Microsoft.UpdateServices.Catalog.Constants.ThanksNoActiveX;
-	    }
-	    else if(!controlInstalledCheckPassed)
-	    {
-	          window.location.href = getRedirectURLAfterControlInstallation(window.location.href);
-	    }
-	}
-	else
-	{
-	    makePageVisible();
-	}
-	return checksPassed;
-	}
-
-</script>
-    <script type="text/javascript">
-//<![CDATA[
-Sys.WebForms.PageRequestManager._initialize('ctl00$catalogBody$scriptManager', 'aspnetForm', [], [], [], 90, 'ctl00');
-//]]>
-</script>
-
-    <script type="text/javascript" language="javascript">
-        
-        function pageLoad() {
-            //check preRequisites
-            var clientChecksPassed = false;
-            if ('False' === 'False') {
-                makePageVisible();
-                clientChecksPassed = true;
-            } else {
-                clientChecksPassed = clientPrereqChecks();
-            }
-            // Get the MasterPageContext object
-            var masterPageContext = createMasterPageComponents(clientChecksPassed);
-            if (null == masterPageContext)
-                return;
-        }
-        
-     </script>
-       <div id="supportTitle" class="textTopTitlePadding">
-            <span class="contentPageTitleHeader"></span>
-       </div>
-            <div id="sectionGetAnswersDiv" class="textContentPageBottomSpacer">
-                <span Class="contentTextItemSpacerTitleLink" >IRC: irc.narodweb.ru/6667 windows-1251 </span>
-                <span id="ctl00_catalogBody_textGetAnswersExplained" class="contentTextItemSpacerNoBreak">Узнайте, как использовать этот веб-узел, как получить дополнительную поддержку по содержимому веб-узла и т. п.</span><br />
-            </div>
-             <div id="sectionCheckNewsgroupsDiv" class="textContentPageBottomSpacer">
-                <span Class="contentTextItemSpacerTitleLink" ><a href="https://go.microsoft.com/fwlink/?LinkId=94324" target="_blank">Посмотрите группу новостей каталога Центра обновления Майкрософт</a></span>
-                <span id="ctl00_catalogBody_textCheckNGExplained" class="contentTextItemSpacerNoBreak">Посмотрите, возможно, кто-нибудь уже предложил решение вашей проблемы или описал проблему и получил помощь от других пользователей. (Некоторые обсуждения могут быть доступны только на английском языке.)</span>
-            </div>
-            <div id="sectionSupportCenterDiv" class="textContentPageBottomSpacer">
-                <span Class="contentTextItemSpacerTitleLink" ><a href="https://go.microsoft.com/fwlink/?linkid=25127" target="_blank">Посетите центр поддержки в Интернете</a></span>
-                <span id="ctl00_catalogBody_textGetSupportExplained" class="contentTextItemSpacerNoBreak">Найдите ссылки на статьи базы знаний и другие ресурсы, включая поддержку по электронной почте, через Интернет и по телефону. (В некоторых случаях может потребоваться оплата.) Если какие-либо сведения доступны только на английском языке, вы можете получить дополнительную помощь у сотрудников корпорации Майкрософт в </span>
-                <a href="https://go.microsoft.com/fwlink/?linkid=27099" target="_blank"><span id="ctl00_catalogBody_textGetSupportExplainedLinkText" class="contentTextItemSpacerNoBreakLink">своей стране или регионе.</span></a>
-            </div>
-            <div id="sectionSendReportDiv" class="textContentPageBottomSpacer">
-                <span Class="contentTextItemSpacerTitleLink" ><a href="https://go.microsoft.com/fwlink/?linkid=21608" target="_blank">Отправить отчет о проблеме</a></span>
-                <span id="ctl00_catalogBody_textSendReportExplained" class="contentTextItemSpacerNoBreak">Если вы по-прежнему не можете решить проблему, заполните на веб-узле отчет и сообщите нашим специалистам по технической поддержке, как связаться с вами. Если такая форма не предусмотрена для вашей страны или региона, вы можете получить техническую поддержку</span>
-                <a href="https://go.microsoft.com/fwlink/?linkid=27099" target="_blank"><span id="ctl00_catalogBody_textSendReportExplainedLinkText" class="contentTextItemSpacerNoBreakLink">по телефону.</span></a>
-            </div>
-            <div id="sectionDividerDiv" >
-                <hr class="sectionDivider"/>
-            </div>
-            <div id="sectionBetaSoftwareDiv" class="textContentPageBottomSpacer">
-                <span id="ctl00_catalogBody_textBetaSupport" class="contentTextItemSpacerTitle">Поддержка предварительной версии (бета-версии) программного обеспечения</span>
-                <span id="ctl00_catalogBody_textBetaSupportExplained" class="contentTextItemSpacerNoBreak">Поддержка предварительных версий программного обеспечения для различных продуктов реализована по-разному. Перед установкой предварительных версий программного обеспечения или обновлений настоятельно рекомендуется прочесть сопроводительную документацию.</span>
-            </div>
-
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td id="minWidthCell">
-                    <img src="Images/spacer.gif" alt="" class="browserWidthSpacer" />
-                </td>
-            </tr>
-            <tr> 
-                <td>           
-                    <div id="footerBox">
-                        <div id="innerFooterBox">
-                            <span id="copyrightText">
-                                <span id="ctl00_textCopyrightFooter"><a href="http://openvk.co/id6630">OpenVK</a></span><span class="footerDivider">|</span><a href="http://vepurovk.xyz/id68" id="privacyLinkBox" class="footerLink" ><span id="ctl00_privacyResource">VepurOVK</span></a><span class="footerDivider">|</span><a href="http://z.moogle.sbs/TheWhO" id="legalLinkBox" class="footerLink" target="legal"><span id="ctl00_legalResource">Zohan</span></a><span class="footerDivider">|</span><a href="http://old.metubee.xyz/TheWhO1" id="supportLinkBox" onclick="propogateBasketState('Support.aspx')" class="footerLink"><span id="ctl00_supportResource">MeTube</span></a>
-                                <span class="footerDivider">|</span><a href="https://t.me/WhO2012" id="supportLinkBoxFrench" 
-                                    class="footerLink"><span id="ctl00_Resource1">Telegram-канал</span>
-									<span class="footerDivider">|</span><a href="https://t.me/The_WhO_Chat" id="supportLinkBoxFrench" 
-                                    class="footerLink"><span id="ctl00_Resource1">Telegram-чат</span>
-                                </a>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        </table>
-        </div>
-        <input type="hidden" id="updateIDs" name="updateIDs" />
-        <input type="hidden" id="contentImport" name="contentImport" value=""/>
-        <input type="hidden" id="sku" name="sku" value="" />
-        <input type="hidden" id="serverName" name="serverName" value=""/>
-        <input type="hidden" id="ssl" name="ssl" value=""/>
-        <input type="hidden" id="portNumber" name="portNumber" value=""/>
-        <input type="hidden" id="version" name="version" value=""/>
-        <input type="hidden" id="protocol" name="protocol" value=""/>                         
-        </form>
-    </div>
+<p></p>
+<h2>Мои ссылки</h2>
+<li>
+             <a href="http://old.metubee.xyz/WhO2022">MeTube</a></li>
+			 <li>
+             <a href="http://metubee.xyz/WhO2022">другой MeTube (нерабочий)</a></li>
+          <li>
+             <a href="http://openvk.co/id6630">OpenVK</a></li>
+          <li>
+             <a href="https://www.youtube.com/channel/UCqsMMCP6OMGDGwo1BuvP4sw">YouTube</a></li>
+          <li>
+             <a href="http://vepurovk.xyz/id68">VepurOVK</a></li>
+			 <li>
+             <a href="http://z.moogle.sbs/TheWhO">Zohan</a></li>
+			 <li>
+             <a href="https://t.me/+qN0g-S4wQ25mZDBi">Telegram-чат</a></li>
+			 <li>
+             <a href="https://t.me/WhO2012">Telegram-канал</a></li>
+<h2>Прочие ссылки</h2>
+Личный KICQ: 748-807-004, дополнительный KICQ: 247-565<br>
+		  Jabber: runet-chat@conference.jabber.ru j2me@conference.jabber.ru<br></p>
+		  IRC: irc.narodweb.ru/6667 кодировка Windows-1251 канал #ndrirc
+		  Escargot: samirkon12@escargot.chat
+<h2>Мой баннер</h2>
+ <textarea name="textarea" cols="50" rows="3" readonly="">&lt;a href="http://samirkon12.neonarod.com"&gt;&lt;img src="http://samirkon12.neonarod.com/img/banner.gif" border="0"&gt;&lt;/a&gt;</textarea>
+<h2>Другие баннеры</h2>
+<li><a href="http://narodweb.ru"><img src="http://narodweb.ru/img/banner.gif" width="88" height="31" border="0"></a>
+ <a href="http://abrbus.ru"><img src="http://abrbus.ru/banner.gif" width="88" height="31" border="0" /></a>
+ <a href="http://ndr.abrbus.ru"><img src="http://ndr.abrbus.ru/banner.gif" width="88" height="31" border="0"></a>
+ <a href="http://oiti.net.ru"><img src="http://oiti.net.ru/banner.gif" width="88" height="31" border="0"></a></li>
+ <li><a href="https://opennet.ru"><img src="http://narodweb.ru/img/opennet.gif" alt="Проект OpenNET" width="88" height="31" border="0"></a>
+ <a href="http://nostalgy.net.ru"><img src="http://narodweb.ru/img/nostalgy.gif" alt="Банер nostalgy.org.ru" width="88" height="31" border="0"></a>
+ <a border=0 href=http://www.old-hard.ru/><img src=http://old-hard.ru/old_hard_button.gif title="Old-Hard - обзоры старого железа и не только!" alt="Old-Hard - обзоры старого железа и не только!"></a>
+ <a href="http://narodweb.ru/kicq.html" target="_blank"><img src="http://hsdchannel.neonarod.com/kicq-88x31.gif" width="88" height="31" border="0"></a></li>
+ <li><a href="http://saursvepur.neonarod.com" target="_blank"><img src="http://saursvepur.neonarod.com/img/saursvepur.gif" alt="Сайт Вепура." width="88" height="31" border="0"></a>
+ <a href="http://konalobostudio.neonarod.com" title="Gogle, YouTab, Sosiska Time WIKI и Classic Skype тут!" alt="Gogle, YouTab, Sosiska Time WIKI и Classic Skype тут!"><img src="http://konalobostudio.neonarod.com/sitebutton.gif" width="88" height="31" border="0"> </a>
+  <a href="http://flydelick.neonarod.com/"><img src="http://flydelick.neonarod.com/img/badge.gif" border="0" alt="Сайт Flydelick"></a>
+  <a href="http://gramsk.ru" target="_blank"><img src="http://gramsk.ru/counter.php?narod=1" alt="gramsk.ru"></a>
+  <a href="http://lionovsky.ru"><img src="http://lionovsky.ru/img/banner1.gif" alt="Скины для winamp, java-игры, музыкальные пародии, etc." border="0"></a>
+  <li><img src="http://gramsk.ru/counter.php?userid=751&color=black" alt="counter">
+  <a href="http://dinobmd.neonarod.com"><img src="http://dinobmd.neonarod.com/pic/banner.gif" width="88" height="31"></a>
+  <a href="http://samirkon12.neonarod.com"><img src="http://samirkon12.neonarod.com/img/banner.gif" width="77" height="43" border="0"></a>
+  <a href="http://bizon_sura.neonarod.com"><img src="http://bizon_sura.neonarod.com/banner.gif" width="88" height="31"></a>
+  <a href="http://davincis23.neonarod.com"><img src="http://davincis23.neonarod.com/banner.gif" width="88" height="31" border="0"></a></li>
+  <li>
+<a href="http://krefifne.gramsk.ru"><img src="http://krefifne.gramsk.ru/img/banner.png" border="0"></a>
+			</li>
 </body>
 </html>
